@@ -46,12 +46,13 @@ if (!exampleModel) {
   });
 }
 
-const BlockMappings:{[key in typeof exampleModel.modularContentField[number]['__typename']]: any} = {
-  'ExampleBlockRecord': ExampleBlock,
-  'ImageBlockRecord': ImageBlock,
-  'InvalidRecordType': ExampleBlock, // This should cause a TypeScript error
-}
-
+const BlockMappings: {
+  [key in (typeof exampleModel.modularContentField)[number]['__typename']]: any;
+} = {
+  ExampleBlockRecord: ExampleBlock,
+  ImageBlockRecord: ImageBlock,
+  InvalidRecordType: ExampleBlock, // This should cause a TypeScript error
+};
 ---
 
 <Layout>
