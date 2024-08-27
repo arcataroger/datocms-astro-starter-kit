@@ -1,0 +1,17 @@
+---
+import { type FragmentOf, readFragment } from '~/lib/datocms/graphql';
+import { ExampleBlockFragment } from './fragments';
+
+interface Props {
+  block: FragmentOf<typeof ExampleBlockFragment>;
+}
+
+const { block } = Astro.props;
+
+// Read unmasked block from fragment
+const unmaskedBlock = readFragment(ExampleBlockFragment, block);
+---
+
+<pre>
+  {JSON.stringify(unmaskedBlock, null, 2)}
+</pre>

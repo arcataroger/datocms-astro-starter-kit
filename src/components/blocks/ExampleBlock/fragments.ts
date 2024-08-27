@@ -1,4 +1,3 @@
-import { ResponsiveImageFragment } from '~/components/ResponsiveImage/fragments';
 import { graphql } from '~/lib/datocms/graphql';
 
 /**
@@ -14,18 +13,32 @@ import { graphql } from '~/lib/datocms/graphql';
  * Learn more: https://gql-tada.0no.co/guides/fragment-colocation
  */
 
-export const ImageBlockFragment = graphql(
-  /* GraphQL */ `
-    fragment ImageBlockFragment on ImageBlockRecord @_unmask {
-      id
-      __typename
-      asset {
-        title
-        responsiveImage(sizes: "(max-width: 700px) 100vw, 700px") {
-          ...ResponsiveImageFragment
+const ExampleBlockFields = graphql(`
+  fragment ExampleBlockFields on ExampleBlockRecord @_unmask {
+    id
+    __typename
+    singleLineString
+    multiParagraphText
+  }
+`);
+
+export const ExampleBlockFragment = graphql(
+  `
+    fragment ExampleBlockFragment on ExampleBlockRecord @_unmask {
+      ...ExampleBlockFields
+      nestedModularContentField {
+        # Level 1 nesting
+        ...ExampleBlockFields
+        nestedModularContentField {
+          # Level 2
+          ...ExampleBlockFields
+          nestedModularContentField {
+            # Etc
+            ...ExampleBlockFields
+          }
         }
       }
     }
   `,
-  [ResponsiveImageFragment],
+  [ExampleBlockFields],
 );

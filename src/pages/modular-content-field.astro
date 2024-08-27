@@ -1,0 +1,70 @@
+---
+import { graphql } from '~/lib/datocms/graphql';
+import Layout from '../layouts/Layout.astro';
+import { executeQuery } from '~/lib/datocms/executeQuery';
+import DraftModeQueryListener from '~/components/DraftModeQueryListener/index.astro';
+import { isDraftModeEnabled } from '~/lib/draftMode';
+import { ImageBlockFragment } from '../components/blocks/ImageBlock/fragments';
+import { ExampleBlockFragment } from '../components/blocks/ExampleBlock/fragments';
+import ImageBlock from '~/components/blocks/ImageBlock/index.astro';
+import ExampleBlock from '~/components/blocks/ExampleBlock/index.astro';
+
+/**
+ * The GraphQL query that will be executed for this route to generate the page
+ * content and metadata.
+ *
+ * Thanks to gql.tada, the result will be fully typed!
+ */
+const query = graphql(
+  `
+    query ExampleQuery {
+      exampleModel {
+        id
+        title
+        modularContentField {
+          ... on ImageBlockRecord {
+            __typename
+            ...ImageBlockFragment
+          }
+          ... on ExampleBlockRecord {
+            __typename
+            ...ExampleBlockFragment
+          }
+        }
+      }
+    }
+  `,
+  [ExampleBlockFragment, ImageBlockFragment],
+);
+
+const draftModeEnabled = isDraftModeEnabled(Astro.cookies);
+const { exampleModel } = await executeQuery(query, { includeDrafts: draftModeEnabled });
+if (!exampleModel) {
+  return new Response(null, {
+    status: 404,
+    statusText: 'Not found',
+  });
+}
+
+const BlockMappings:{[key in typeof exampleModel.modularContentField[number]['__typename']]: any} = {
+  'ExampleBlockRecord': ExampleBlock,
+  'ImageBlockRecord': ImageBlock,
+  'InvalidRecordType': ExampleBlock, // This should cause a TypeScript error
+}
+
+---
+
+<Layout>
+  <title>MCF Astro Demo</title>
+  <h1>{exampleModel.title}</h1>
+
+  <h2>Example of blocks being mapped</h2>
+  {
+    exampleModel.modularContentField.map((block) => {
+      const BlockComponent = BlockMappings[block.__typename];
+      return BlockComponent ? <BlockComponent block={block} /> : null;
+    })
+  }
+
+  <DraftModeQueryListener query={query} />
+</Layout>
